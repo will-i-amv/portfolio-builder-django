@@ -47,10 +47,13 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        default="postgres:///portfolio_builder",
-    ),
+    "default": {
+        "ENGINE":"django.db.backends.postgresql",
+        "USER": env.str("DJANGO_DB_USER"),
+        "PASSWORD": env.str("DJANGO_DB_PASSWD"),
+        "HOST": env.str("DJANGO_DB_HOST"),
+        "NAME":env.str("DJANGO_DB_NAME"),
+    }
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
