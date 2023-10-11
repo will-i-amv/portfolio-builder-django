@@ -281,3 +281,6 @@ SOCIALACCOUNT_FORMS = {"signup": "portfolio_builder.users.forms.UserSocialSignup
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# Internationalization and translation
+USE_I18N = False
