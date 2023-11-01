@@ -33,7 +33,7 @@ LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
-USE_I18N = True
+USE_I18N = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
@@ -281,6 +281,3 @@ SOCIALACCOUNT_FORMS = {"signup": "portfolio_builder.users.forms.UserSocialSignup
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-
-# Internationalization and translation
-USE_I18N = False
