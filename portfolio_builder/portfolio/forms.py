@@ -41,7 +41,7 @@ def validate_date(date: DateField) -> None:
         )
 
 
-class AddWatchlistForm(forms.Form):
+class AddPortfolioForm(forms.Form):
     name = CharField(
         label="New Portfolio", 
         min_length=3, 
@@ -50,39 +50,39 @@ class AddWatchlistForm(forms.Form):
 
     def clean_name(self) -> None:
         input_name = self.cleaned_data['name']
-        watchlist = Portfolio.custom_objects.get_first_item(
+        portf_obj = Portfolio.custom_objects.get_first_item(
             filters=(
                 Q(user_id=1) & # Change for user.id next
                 Q(name=input_name),
             )
         )
-        if watchlist is not None:
-            raise ValidationError(f"The watchlist '{input_name}' already exists.")
+        if portf_obj is not None:
+            raise ValidationError(f"The portfolio '{input_name}' already exists.")
         return input_name
 
 
-class SelectWatchlistForm(forms.Form):
+class SelectPortfolioForm(forms.Form):
     name = ChoiceField(
-        label="Available Watchlists", 
+        label="Available Portfolios", 
         min_length=3, 
         max_length=25
     )
 
     def clean_name(self) -> None:
         input_name = self.cleaned_data['name']
-        watchlist = Portfolio.custom_objects.get_first_item(
+        portf_obj = Portfolio.custom_objects.get_first_item(
             filters=(
                 Q(user_id=1) & # Change for user.id next
                 Q(name=input_name),
             )
         )
-        if watchlist is None:
-            raise ValidationError(f"The watchlist '{input_name}' doesn't exist.")
+        if portf_obj is None:
+            raise ValidationError(f"The portfolio '{input_name}' doesn't exist.")
         return input_name
 
 
-class ItemForm(forms.Form):
-    watchlist = forms.CharField(widget=forms.HiddenInput())
+class PositionForm(forms.Form):
+    portfolio = forms.CharField(widget=forms.HiddenInput())
     ticker = CharField(
         label="Ticker",
         min_length=1,
@@ -130,7 +130,7 @@ class ItemForm(forms.Form):
         raise NotImplementedError
 
 
-class AddItemForm(ItemForm):
+class AddPositionForm(PositionForm):
     def clean_side(self) -> None:
         input_side = self.cleaned_data['side']
         if input_side == 'sell':
@@ -142,9 +142,9 @@ class AddItemForm(ItemForm):
         return input_trade_date
 
 
-class UpdateItemForm(ItemForm):
+class UpdatePositionForm(PositionForm):
     def clean_side(self) -> None:
-        input_watchlist = self.cleaned_data['watchlist']
+        input_portfolio = self.cleaned_data['portfolio']
         input_side = self.cleaned_data['side']
         input_ticker = self.cleaned_data['ticker']
         input_price = self.cleaned_data['price']
@@ -155,7 +155,7 @@ class UpdateItemForm(ItemForm):
                 item.flows
                 for item in Position.custom_objects.get_items(
                     filters=(
-                        Q(portfolio_id__name=input_watchlist) &
+                        Q(portfolio_id__name=input_portfolio) &
                         Q(ticker=input_ticker)
                     ),
                     entities=[
@@ -179,12 +179,12 @@ class UpdateItemForm(ItemForm):
     def clean_trade_date(self) -> None:
         input_trade_date = self.cleaned_data['trade_date']
         input_ticker = self.cleaned_data['ticker']
-        input_watchlist = self.cleaned_data['watchlist']
+        input_portfolio = self.cleaned_data['portfolio']
         position_obj = (
             Position.custom_objects.get_first_item(filters=(
-                Q(portfolio_id__name=input_watchlist) &
-                Q(ticker=input_ticker),
-                Q(is_last_trade=True),
+                Q(portfolio_id__name=input_portfolio) &
+                Q(ticker=input_ticker) &
+                Q(is_last_trade=True)
             ))
         )
         if position_obj:
