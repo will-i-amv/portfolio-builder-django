@@ -50,7 +50,7 @@ class AddPortfolioForm(forms.Form):
 
     def clean_name(self) -> None:
         input_name = self.cleaned_data['name']
-        portf_obj = Portfolio.custom_objects.get_first_item(
+        portf_obj = Portfolio.custom_obj.get_first_item(
             filters=(
                 Q(user_id=1) & # Change for user.id next
                 Q(name=input_name),
@@ -70,7 +70,7 @@ class SelectPortfolioForm(forms.Form):
 
     def clean_name(self) -> None:
         input_name = self.cleaned_data['name']
-        portf_obj = Portfolio.custom_objects.get_first_item(
+        portf_obj = Portfolio.custom_obj.get_first_item(
             filters=(
                 Q(user_id=1) & # Change for user.id next
                 Q(name=input_name),
@@ -153,7 +153,7 @@ class UpdatePositionForm(PositionForm):
         if input_side == 'sell':
             net_asset_values = [ 
                 item.flows
-                for item in Position.custom_objects.get_items(
+                for item in Position.custom_obj.get_items(
                     filters=(
                         Q(portfolio_id__name=input_portfolio) &
                         Q(ticker=input_ticker)
@@ -181,7 +181,7 @@ class UpdatePositionForm(PositionForm):
         input_ticker = self.cleaned_data['ticker']
         input_portfolio = self.cleaned_data['portfolio']
         position_obj = (
-            Position.custom_objects.get_first_item(filters=(
+            Position.custom_obj.get_first_item(filters=(
                 Q(portfolio_id__name=input_portfolio) &
                 Q(ticker=input_ticker) &
                 Q(is_last_trade=True)

@@ -160,7 +160,7 @@ class Security(models.Model):
     currency = models.CharField(max_length=3, default='USD')
     country = models.CharField(max_length=3, default='USA')
     isin = models.CharField(max_length=12, default='')
-    custom_objects = SecurityMgr()
+    custom_obj = SecurityMgr()
 
     def __repr__(self) -> str:
         return (
@@ -177,7 +177,7 @@ class Price(models.Model):
         on_delete=models.CASCADE, 
         related_name='ticker_id',
     )
-    custom_objects = PriceMgr()
+    custom_obj = PriceMgr()
 
     class Meta:
         indexes = [
@@ -201,7 +201,7 @@ class Portfolio(models.Model):
         on_delete=models.CASCADE, 
         related_name='user_id',
     )
-    custom_objects = PortfolioMgr()
+    custom_obj = PortfolioMgr()
 
     def __repr__(self) -> str:
         return (f"<Portfolio Name: {self.name}>")
@@ -225,7 +225,7 @@ class Position(models.Model):
         on_delete=models.CASCADE,
         related_name='portfolio_id',
     )
-    custom_objects = PositionMgr()
+    custom_obj = PositionMgr()
 
     def __repr__(self) -> str:
         return (
