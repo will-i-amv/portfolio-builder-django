@@ -1,5 +1,8 @@
+from typing import List, Optional
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Case, F, FloatField, Q, QuerySet, Sum, When
 
 
 User = get_user_model()
@@ -9,6 +12,151 @@ SIDES = (
 )
 
 
+class SecurityMgr(models.Manager):
+    def get_items(
+        self,
+        filters: Q,
+        entities: Optional[List[str]] = None,
+        orderby: Optional[List[str]] = None,
+    ) -> QuerySet:
+        if not entities:
+            entities = [
+                'name',
+                'ticker',
+                'exchange',
+                'currency',
+                'country',
+                'isin',
+            ]
+        if not orderby:
+            orderby = ['ticker']
+        items = (
+            self
+            .get_queryset()
+            .filter(filters)
+            .order_by(*orderby)
+            .values(*entities)
+            .all()
+        )
+        return items
+
+
+class PriceMgr(models.Manager):
+    def get_items(
+        self,
+        filters: Q,
+        entities: Optional[List[str]] = None,
+        orderby: Optional[List[str]] = None,
+    ) -> QuerySet:
+        if not entities:
+            entities = ['date', 'close']
+        if not orderby:
+            orderby = ['date'] 
+        prices = (
+            self
+            .get_queryset()
+            .select_related('ticker_id')
+            .filter(filters)
+            .order_by(*orderby)
+            .values(*entities)
+            .all()
+        )
+        return prices
+
+
+class PortfolioMgr(models.Manager):
+    def _base_query(self, filters: Q) -> QuerySet:
+        query = (
+            self
+            .get_queryset()
+            .filter(filters)
+        )
+        return query
+
+    def get_first_item(self, filters: Q) -> Optional['Portfolio']:
+        item = self._base_query(filters).first()
+        return item
+
+    def get_items(
+        self,
+        filters: Q,
+        entities: Optional[List[str]] = None,
+        orderby: Optional[List[str]] = None,
+    ) -> QuerySet:
+        if not entities: 
+            entities = ['name']
+        if not orderby: 
+            orderby = ['id']
+        items = (
+            self
+            ._base_query(filters)
+            .order_by(*orderby)
+            .values(*entities)
+            .all()
+        )
+        return items
+
+
+class PositionMgr(models.Manager):
+    def _base_query(self, filters: Q) -> QuerySet:
+        query = (
+            self
+            .get_queryset()
+            .select_related('portfolio_id')
+            .filter(filters)
+        )
+        return query
+
+    def get_first_item(self, filters: Q) -> Optional['Position']:
+        item = self._base_query(filters).first()
+        return item
+
+    def get_items(
+        self,
+        filters: Q,
+        entities: Optional[List[str]] = None,
+        orderby: Optional[List[str]] = None,
+    ) -> QuerySet:
+        if not entities: 
+            entities = [
+                'id',
+                'ticker',
+                'quantity',
+                'price',
+                'side',
+                'trade_date',
+                'comments',
+            ]
+        if not orderby: 
+            orderby = ['id']
+        items = (
+            self
+            ._base_query(filters)
+            .order_by(*orderby)
+            .values(*entities)
+            .all()
+        )
+        return items
+
+    def get_grouped_items(self, filters: Q) -> QuerySet:
+        items = (
+            self
+            ._base_query(filters)
+            .values('trade_date')
+            .annotate(
+                flows=Sum(
+                    Case(
+                        When(side='buy', then=(F('quantity') * F('price'))),
+                        When(side='sell', then=(F('quantity') * F('price') * (-1))),
+                        output_field=FloatField()
+                    )
+                )
+            )
+            .order_by('trade_date')
+        )
+        return items
+
+
 class Security(models.Model):
     name = models.CharField(max_length=200)
     ticker = models.CharField(max_length=10, unique=True)
@@ -16,6 +164,7 @@ class Security(models.Model):
     currency = models.CharField(max_length=3, default='USD')
     country = models.CharField(max_length=3, default='USA')
     isin = models.CharField(max_length=12, default='')
+    custom_objects = SecurityMgr()
 
     def __repr__(self) -> str:
         return (
@@ -32,6 +181,7 @@ class Price(models.Model):
         on_delete=models.CASCADE, 
         related_name='ticker_id',
     )
+    custom_objects = PriceMgr()
 
     class Meta:
         indexes = [
@@ -55,6 +205,7 @@ class Portfolio(models.Model):
         on_delete=models.CASCADE, 
         related_name='user_id',
     )
+    custom_objects = PortfolioMgr()
 
     def __repr__(self) -> str:
         return (f"<Portfolio Name: {self.name}>")
@@ -74,6 +225,7 @@ class Position(models.Model):
         on_delete=models.CASCADE,
         related_name='portfolio_id',
     )
+    custom_objects = PositionMgr()
 
     def __repr__(self) -> str:
         return (
