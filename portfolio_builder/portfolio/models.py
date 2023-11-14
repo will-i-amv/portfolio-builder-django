@@ -6,10 +6,6 @@ from django.db.models import Case, F, FloatField, Q, QuerySet, Sum, When
 
 
 User = get_user_model()
-SIDES = (
-    ('B', 'Buy'),
-    ('S', 'Sell'),
-)
 
 
 class SecurityMgr(models.Manager):
@@ -211,7 +207,11 @@ class Portfolio(models.Model):
         return (f"<Portfolio Name: {self.name}>")
 
 
-class Position(models.Model):    
+class Position(models.Model):
+    SIDES = (
+        ('B', 'Buy'),
+        ('S', 'Sell'),
+    )
     ticker = models.CharField(max_length=20, unique=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=6)
