@@ -43,12 +43,12 @@ def index(request) -> str:
     sel_portf_form = SelectPortfolioForm()
     add_pos_form = AddPositionForm()
     upd_pos_form = UpdatePositionForm()
-    sel_portf_form.name.choices =  [
+    sel_portf_form.choices =  [
         (item, item)
         for item in portf_names
     ]
     if sel_portf_form.is_valid():
-        curr_portf_name = sel_portf_form.name.data # Current portfolio name
+        curr_portf_name = sel_portf_form.name # Current portfolio name
     else:
         curr_portf_name = next(iter(portf_names), '')
     positions = Position.custom_obj.get_items(filters=(
@@ -56,17 +56,20 @@ def index(request) -> str:
         Q(portfolio_id__name=curr_portf_name) &
         Q(is_last_trade=True)
     ))
-    securities = Security.custom_obj.get_items(filters=Q(True))
+    securities = Security.custom_obj.get_items(filters=Q())
     return render(
-        "portfolio.html", 
-        sel_portf_form=sel_portf_form,
-        add_portf_form=add_portf_form,
-        add_pos_form=add_pos_form,
-        upd_pos_form=upd_pos_form,
-        curr_portf_name=curr_portf_name,
-        portf_names=portf_names,
-        securities=securities,
-        positions=positions,
+        request,
+        "portfolio/portfolio.html", 
+        {
+            'sel_portf_form': sel_portf_form,
+            'add_portf_form': add_portf_form,
+            'add_pos_form': add_pos_form,
+            'upd_pos_form': upd_pos_form,
+            'curr_portf_name': curr_portf_name,
+            'portf_names': portf_names,
+            'securities': securities,
+            'positions': positions,
+        }
     )
 
 
