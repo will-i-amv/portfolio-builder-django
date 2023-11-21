@@ -63,9 +63,7 @@ class AddPortfolioForm(forms.Form):
 
 class SelectPortfolioForm(forms.Form):
     name = ChoiceField(
-        label="Available Portfolios", 
-        min_length=3, 
-        max_length=25
+        label="Available Portfolios",
     )
 
     def clean_name(self) -> None:
@@ -89,21 +87,21 @@ class PositionForm(forms.Form):
         max_length=20,
     )
     quantity = IntegerField(
-        "Quantity",
+        label="Quantity",
         min_value=1,
         max_value=100000,
     )
     price = DecimalField(
-        "Price",
+        label="Price",
         min_value=1,
         max_value=1000000,
     )
     side = ChoiceField(
-        "Side",
+        label="Side",
         choices=(('buy'), ('sell')),
     )
     trade_date = DateField(
-        "Trade Date",
+        label="Trade Date",
         initial=get_default_date, 
         validators=[validate_date],
     )
